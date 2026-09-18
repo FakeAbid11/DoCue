@@ -27,51 +27,57 @@ class AppPickerViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun loadInstalledApps() {
-        val pm = getApplication<Application>().packageManager
-        val selfPackage = getApplication<Application>().packageName
+        try {
+            val pm = getApplication<Application>().packageManager
+            val selfPackage = getApplication<Application>().packageName
 
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            }
 
-        val resolveInfos: List<ResolveInfo> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            pm.queryIntentActivities(
-                intent,
-                PackageManager.ResolveInfoFlags.of(
-                    PackageManager.MATCH_DEFAULT_ONLY.toLong()
+            val resolveInfos: List<ResolveInfo> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pm.queryIntentActivities(
+                    intent,
+                    PackageManager.ResolveInfoFlags.of(0L)
                 )
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        }
-
-        val apps = resolveInfos.mapNotNull { resolveInfo ->
-            val activityInfo = resolveInfo.activityInfo ?: return@mapNotNull null
-            val packageName = activityInfo.packageName
-            if (packageName == selfPackage) return@mapNotNull null
-
-            val appName = try {
-                resolveInfo.loadLabel(pm).toString()
-            } catch (e: Exception) {
-                Log.w("AppPickerVM", "Failed to load label for $packageName", e)
-                activityInfo.loadLabel(pm).toString().ifBlank { packageName }
-            }
-            val icon = try {
-                resolveInfo.loadIcon(pm)
-            } catch (_: Exception) {
-                null
+            } else {
+                @Suppress("DEPRECATION")
+                pm.queryIntentActivities(intent, 0)
             }
 
-            AppInfo(
-                packageName = packageName,
-                appName = appName,
-                icon = icon
-            )
-        }.sortedBy { it.appName.lowercase() }
+            val apps = resolveInfos.mapNotNull { resolveInfo ->
+                val activityInfo = resolveInfo.activityInfo ?: return@mapNotNull null
+                val packageName = activityInfo.packageName
+                if (packageName == selfPackage) return@mapNotNull null
 
-        _uiState.update {
-            it.copy(installedApps = apps, isLoading = false)
+                val appName = try {
+                    resolveInfo.loadLabel(pm).toString()
+                } catch (e: Exception) {
+                    Log.w("AppPickerVM", "Failed to load label for $packageName", e)
+                    activityInfo.loadLabel(pm).toString().ifBlank { packageName }
+                }
+                val icon = try {
+                    resolveInfo.loadIcon(pm)
+                } catch (_: Exception) {
+                    null
+                }
+
+                AppInfo(
+                    packageName = packageName,
+                    appName = appName,
+                    icon = icon
+                )
+            }.distinctBy { it.packageName }
+             .sortedBy { it.appName.lowercase() }
+
+            _uiState.update {
+                it.copy(installedApps = apps, isLoading = false)
+            }
+        } catch (e: Exception) {
+            Log.e("AppPickerVM", "Failed to load installed apps", e)
+            _uiState.update {
+                it.copy(installedApps = emptyList(), isLoading = false)
+            }
         }
     }
 }
