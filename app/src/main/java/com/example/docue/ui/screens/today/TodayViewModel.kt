@@ -31,6 +31,16 @@ class TodayViewModel(application: Application) : AndroidViewModel(application) {
                 initialValue = emptyList()
             )
 
+    val greeting: String
+        get() {
+            val hour = LocalTime.now().hour
+            return when {
+                hour < 12 -> "Good morning"
+                hour < 17 -> "Good afternoon"
+                else -> "Good evening"
+            }
+        }
+
     fun deleteReminder(id: Long) {
         viewModelScope.launch {
             scheduler.cancel(id)

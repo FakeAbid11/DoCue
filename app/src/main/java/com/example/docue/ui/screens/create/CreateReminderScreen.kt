@@ -1,5 +1,6 @@
 package com.example.docue.ui.screens.create
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -24,22 +26,27 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -63,6 +70,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.docue.data.local.ActionType
 import com.example.docue.data.local.RepeatType
+import com.example.docue.ui.components.DoCueSectionHeader
 import com.example.docue.util.formatDate
 import com.example.docue.util.formatTime
 import java.time.DayOfWeek
@@ -208,7 +216,7 @@ fun CreateReminderScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
-                title = { Text(if (uiState.isEditing) "Edit Cue" else "Create Cue") },
+                title = { Text(if (uiState.isEditing) "Edit Cue" else "New Cue") },
                 navigationIcon = {
                     IconButton(
                         onClick = onNavigateBack,
@@ -237,8 +245,8 @@ fun CreateReminderScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
         }
@@ -248,35 +256,40 @@ fun CreateReminderScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            SectionLabel("What do you need to remember?")
+            DoCueSectionHeader(
+                icon = androidx.compose.material.icons.Icons.Outlined.Edit,
+                title = "What do you need to remember?"
+            )
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = { viewModel.updateTitle(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Title") },
+                placeholder = { Text("Enter a title") },
                 isError = uiState.titleError != null,
                 supportingText = uiState.titleError?.let { error -> { Text(error) } },
                 singleLine = true
             )
 
-            SectionLabel("Add a note (optional)")
             OutlinedTextField(
                 value = uiState.notes,
                 onValueChange = { viewModel.updateNotes(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Notes") },
+                placeholder = { Text("Add a note (optional)") },
                 minLines = 2,
                 maxLines = 4
             )
 
-            HorizontalDivider()
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionLabel("When?")
+            DoCueSectionHeader(
+                icon = androidx.compose.material.icons.Icons.Outlined.Schedule,
+                title = "When?"
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -319,9 +332,12 @@ fun CreateReminderScreen(
                 )
             }
 
-            HorizontalDivider()
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionLabel("Repeat")
+            DoCueSectionHeader(
+                icon = androidx.compose.material.icons.Icons.Outlined.Repeat,
+                title = "Repeat"
+            )
             Column(modifier = Modifier.selectableGroup()) {
                 RepeatType.entries.forEach { type ->
                     Row(
@@ -332,12 +348,15 @@ fun CreateReminderScreen(
                                 onClick = { viewModel.updateRepeatType(type) },
                                 role = Role.RadioButton
                             )
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = uiState.repeatType == type,
-                            onClick = null
+                            onClick = null,
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.primary
+                            )
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
@@ -355,7 +374,7 @@ fun CreateReminderScreen(
                 }
             }
 
-            if (uiState.repeatType == RepeatType.CUSTOM_DAYS) {
+            AnimatedVisibility(visible = uiState.repeatType == RepeatType.CUSTOM_DAYS) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -378,6 +397,10 @@ fun CreateReminderScreen(
                                     }
                                 )
                             },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
                             modifier = Modifier.semantics {
                                 contentDescription = day.toString()
                             }
@@ -386,16 +409,19 @@ fun CreateReminderScreen(
                 }
             }
 
-            HorizontalDivider()
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionLabel("What should happen when I tap the cue?")
+            DoCueSectionHeader(
+                icon = androidx.compose.material.icons.Icons.Outlined.TouchApp,
+                title = "What happens when you tap it?"
+            )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3),
                     onClick = { viewModel.updateActionType(ActionType.SIMPLE) },
                     selected = uiState.actionType == ActionType.SIMPLE
                 ) {
-                    Text("Just remind me")
+                    Text("Just remind")
                 }
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3),
@@ -413,57 +439,65 @@ fun CreateReminderScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
+
             when (uiState.actionType) {
                 ActionType.APP -> {
                     if (uiState.targetPackage.isNotBlank()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(
-                                Icons.Default.Smartphone,
-                                contentDescription = null,
-                                tint = if (uiState.targetAppAvailable) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.error
-                                }
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                if (uiState.targetAppAvailable) {
-                                    Text(
-                                        text = uiState.targetAppName,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                } else {
-                                    Text(
-                                        text = "App unavailable",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                                Text(
-                                    text = uiState.targetPackage,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            IconButton(
-                                onClick = { viewModel.clearTargetApp() },
-                                modifier = Modifier.semantics {
-                                    contentDescription = "Remove selected app"
-                                }
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = null)
+                                Icon(
+                                    Icons.Default.Smartphone,
+                                    contentDescription = null,
+                                    tint = if (uiState.targetAppAvailable) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.error
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    if (uiState.targetAppAvailable) {
+                                        Text(
+                                            text = uiState.targetAppName,
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    } else {
+                                        Text(
+                                            text = "App unavailable",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                    Text(
+                                        text = uiState.targetPackage,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { viewModel.clearTargetApp() },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Remove selected app"
+                                    }
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = null)
+                                }
                             }
                         }
                     } else {
-                        Button(
+                        OutlinedButton(
                             onClick = onNavigateToAppPicker,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Choose app")
+                            Icon(Icons.Default.Smartphone, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Choose an app")
                         }
                     }
                     if (uiState.actionError != null) {
@@ -490,7 +524,7 @@ fun CreateReminderScreen(
                 ActionType.SIMPLE -> {}
             }
 
-            HorizontalDivider()
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -498,23 +532,27 @@ fun CreateReminderScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text("Expires", style = MaterialTheme.typography.bodyLarge)
+                    Text("Set expiration", style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        text = if (uiState.hasExpiration) "Yes" else "Never",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = if (uiState.hasExpiration) "Enabled" else "Never expires",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Switch(
                     checked = uiState.hasExpiration,
                     onCheckedChange = { viewModel.updateHasExpiration(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
                     modifier = Modifier.semantics {
                         contentDescription = if (uiState.hasExpiration) "Disable expiration" else "Enable expiration"
                     }
                 )
             }
 
-            if (uiState.hasExpiration) {
+            AnimatedVisibility(visible = uiState.hasExpiration) {
                 OutlinedTextField(
                     value = uiState.expirationDate?.formatDate() ?: "",
                     onValueChange = {},
@@ -545,7 +583,7 @@ fun CreateReminderScreen(
                 if (uiState.isSaving) {
                     Text("Saving...")
                 } else {
-                    Icon(Icons.Default.Check, contentDescription = null)
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(if (uiState.isEditing) "Save Changes" else "Save Cue")
                 }
@@ -557,13 +595,18 @@ fun CreateReminderScreen(
 }
 
 @Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 8.dp)
-    )
+private fun Card(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    androidx.compose.material3.Card(
+        modifier = modifier,
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        content()
+    }
 }
 
 @Composable

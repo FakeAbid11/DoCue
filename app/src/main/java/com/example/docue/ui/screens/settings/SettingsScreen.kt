@@ -25,12 +25,14 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.docue.ui.components.DoCueSectionHeader
 import com.example.docue.ui.theme.ThemeMode
 import com.example.docue.util.OemSettingsLauncher
 
@@ -72,7 +75,7 @@ fun SettingsScreen(
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Delete all reminders?") },
+            title = { Text("Delete all cues?") },
             text = { Text("This will permanently remove all your reminders. This cannot be undone.") },
             confirmButton = {
                 TextButton(
@@ -99,8 +102,8 @@ fun SettingsScreen(
                 title = { Text("Settings") },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
         }
@@ -111,7 +114,7 @@ fun SettingsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            SectionHeader(icon = Icons.Outlined.Palette, title = "Appearance")
+            DoCueSectionHeader(icon = Icons.Outlined.Palette, title = "Appearance")
             ThemeSettingSection(
                 selectedMode = themeMode,
                 onModeSelected = { viewModel.setThemeMode(it) }
@@ -119,7 +122,7 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionHeader(icon = Icons.Outlined.Notifications, title = "Reminder reliability")
+            DoCueSectionHeader(icon = Icons.Outlined.Notifications, title = "Reminder reliability")
             ReliabilitySection(
                 state = reliabilityState,
                 onOpenNotificationSettings = { viewModel.openNotificationSettings() },
@@ -129,7 +132,7 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionHeader(icon = Icons.Outlined.PhoneAndroid, title = "Background protection")
+            DoCueSectionHeader(icon = Icons.Outlined.PhoneAndroid, title = "Background protection")
             BackgroundProtectionSection(
                 state = backgroundProtectionState,
                 onOpenAutoStartSettings = { viewModel.openAutoStartSettings() },
@@ -139,7 +142,7 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionHeader(icon = Icons.Outlined.DeleteForever, title = "Danger zone")
+            DoCueSectionHeader(icon = Icons.Outlined.DeleteForever, title = "Danger zone")
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -147,7 +150,7 @@ fun SettingsScreen(
                     .semantics {
                         contentDescription = "Delete all reminders"
                     }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -156,10 +159,10 @@ fun SettingsScreen(
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.error
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Delete all reminders",
+                        text = "Delete all cues",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -173,45 +176,22 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionHeader(icon = Icons.Outlined.Info, title = "About")
-            Text(
-                text = "DoCue v1.1.0",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                text = "Save it. Get cued. Do it.",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
+            DoCueSectionHeader(icon = Icons.Outlined.Info, title = "About")
+            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                Text(
+                    text = "DoCue v1.1.0",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Save it. Get cued. Do it.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-@Composable
-private fun SectionHeader(
-    icon: ImageVector,
-    title: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -230,7 +210,7 @@ private fun ThemeSettingSection(
                         onClick = { onModeSelected(mode) },
                         role = Role.RadioButton
                     )
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 20.dp, vertical = 12.dp)
                     .semantics {
                         contentDescription = "${mode.name.lowercase()} theme"
                     },
@@ -238,7 +218,10 @@ private fun ThemeSettingSection(
             ) {
                 RadioButton(
                     selected = selectedMode == mode,
-                    onClick = null
+                    onClick = null,
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = MaterialTheme.colorScheme.primary
+                    )
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
@@ -321,7 +304,7 @@ private fun ReliabilityItem(
             .semantics {
                 contentDescription = "$title: $status"
             }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -330,7 +313,7 @@ private fun ReliabilityItem(
             modifier = Modifier.size(20.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -344,7 +327,7 @@ private fun ReliabilityItem(
         }
         if (onClick != null) {
             Text(
-                text = "Open settings",
+                text = "Fix",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -362,7 +345,7 @@ private fun BackgroundProtectionSection(
     Column {
         Text(
             text = "Your phone (${state.manufacturerDisplayName}) may restrict DoCue in the background.",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -394,7 +377,7 @@ private fun BackgroundProtectionSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -408,12 +391,16 @@ private fun BackgroundProtectionSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+                .padding(horizontal = 20.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
                 onClick = onOpenAppInfoSettings,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
             ) {
                 Text("Open DoCue settings")
             }

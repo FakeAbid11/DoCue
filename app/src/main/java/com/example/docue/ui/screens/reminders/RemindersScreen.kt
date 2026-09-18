@@ -1,14 +1,19 @@
 package com.example.docue.ui.screens.reminders
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,7 +21,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,6 +32,7 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -46,7 +51,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.docue.data.local.ActionType
 import com.example.docue.data.local.ReminderEntity
-import com.example.docue.ui.components.EmptyState
+import com.example.docue.ui.components.DoCueActionChip
+import com.example.docue.ui.components.DoCueEmptyState
 import com.example.docue.util.formatFullFromMillis
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,30 +93,37 @@ fun RemindersScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
-                title = { Text("Reminders") },
+                title = { Text("All Cues") },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
         }
     ) { padding ->
-        if (reminders.isEmpty()) {
-            EmptyState(
-                icon = Icons.Outlined.Notifications,
-                title = "No reminders yet",
+        AnimatedVisibility(
+            visible = reminders.isEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            DoCueEmptyState(
+                icon = Icons.Outlined.NotificationsOff,
+                title = "No cues yet",
                 subtitle = "Create your first cue and stop relying on memory.",
                 modifier = Modifier.padding(padding)
             )
-        } else {
+        }
+
+        AnimatedVisibility(
+            visible = reminders.isNotEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             LazyColumn(
                 modifier = Modifier.padding(padding),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    horizontal = 16.dp,
-                    vertical = 8.dp
-                )
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 items(reminders, key = { it.id }) { reminder ->
                     ReminderCard(
@@ -135,7 +148,6 @@ private fun ReminderCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .semantics {
                 contentDescription = buildString {
                     append(reminder.title)
@@ -154,14 +166,15 @@ private fun ReminderCard(
             },
         colors = CardDefaults.cardColors(
             containerColor = if (reminder.isEnabled) {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                MaterialTheme.colorScheme.surfaceContainer
             } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                MaterialTheme.colorScheme.surfaceContainerLow
             }
-        )
+        ),
+        onClick = onClick
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -171,17 +184,17 @@ private fun ReminderCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = reminder.title,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         color = if (reminder.isEnabled) {
                             MaterialTheme.colorScheme.onSurface
                         } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         }
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = reminder.reminderTimeMillis.formatFullFromMillis(),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -190,63 +203,49 @@ private fun ReminderCard(
                     onCheckedChange = { onToggleEnabled() },
                     modifier = Modifier.semantics {
                         contentDescription = if (reminder.isEnabled) "Disable reminder" else "Enable reminder"
-                    }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
             }
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ActionChip(actionType = reminder.actionType)
+                DoCueActionChip(
+                    label = when (reminder.actionType) {
+                        ActionType.APP -> "Open app"
+                        ActionType.LINK -> "Open link"
+                        ActionType.SIMPLE -> "Reminder"
+                    },
+                    icon = when (reminder.actionType) {
+                        ActionType.APP -> Icons.Default.Apps
+                        ActionType.LINK -> Icons.Default.Link
+                        ActionType.SIMPLE -> Icons.Default.Notifications
+                    }
+                )
                 IconButton(
                     onClick = onDelete,
-                    modifier = Modifier.semantics {
-                        contentDescription = "Delete reminder"
-                    }
+                    modifier = Modifier
+                        .size(32.dp)
+                        .semantics {
+                            contentDescription = "Delete reminder"
+                        }
                 ) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = null,
+                        modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ActionChip(actionType: ActionType) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.semantics {
-            contentDescription = when (actionType) {
-                ActionType.APP -> "App cue"
-                ActionType.LINK -> "Link cue"
-                ActionType.SIMPLE -> "Simple reminder"
-            }
-        }
-    ) {
-        Icon(
-            imageVector = when (actionType) {
-                ActionType.APP -> Icons.Default.Apps
-                ActionType.LINK -> Icons.Default.Link
-                ActionType.SIMPLE -> Icons.Default.Notifications
-            },
-            contentDescription = null,
-            modifier = Modifier.padding(end = 4.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = when (actionType) {
-                ActionType.APP -> "Open app"
-                ActionType.LINK -> "Open link"
-                ActionType.SIMPLE -> "Remind"
-            },
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
