@@ -5,12 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.docue.DoCueApplication
+import com.example.docue.data.local.RepeatType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 private const val TAG = "AlarmReceiver"
+private const val DIAGNOSTIC_TAG = "DoCueDiagnostic"
 
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -26,6 +28,7 @@ class AlarmReceiver : BroadcastReceiver() {
         }
 
         Log.d(TAG, "Alarm received for reminder $reminderId")
+        Log.d(DIAGNOSTIC_TAG, "ALARM_RECEIVED: reminderId=$reminderId")
 
         val pendingResult = goAsync()
 
@@ -53,12 +56,13 @@ class AlarmReceiver : BroadcastReceiver() {
                     return@launch
                 }
 
-                if (reminder.repeatType == com.example.docue.data.local.RepeatType.NONE) {
-                    if (reminder.reminderTimeMillis < now) {
-                        val delayMinutes = (now - reminder.reminderTimeMillis) / (60 * 1000)
-                        Log.d(TAG, "One-time reminder $reminderId fired $delayMinutes minutes late, ignoring")
-                        return@launch
-                    }
+                val delayMinutes = if (reminder.reminderTimeMillis < now) {
+                    (now - reminder.reminderTimeMillis) / (60 * 1000)
+                } else {
+                    0L
+                }
+                if (delayMinutes > 0) {
+                    Log.d(DIAGNOSTIC_TAG, "ALARM_DELAYED: reminder $reminderId fired $delayMinutes minutes late")
                 }
 
                 val notificationHelper = NotificationHelper(context)
@@ -66,9 +70,10 @@ class AlarmReceiver : BroadcastReceiver() {
 
                 val canShowNotification = notificationHelper.canShowNotifications()
                 if (!canShowNotification) {
-                    Log.w(TAG, "Notification permission not granted for reminder $reminderId, skipping notification")
+                    Log.e(DIAGNOSTIC_TAG, "NOTIFICATION_BLOCKED: permission not granted for reminder $reminderId")
                 } else {
                     notificationHelper.showReminderNotification(reminder)
+                    Log.d(DIAGNOSTIC_TAG, "NOTIFICATION_POSTED: reminder $reminderId (${reminder.title})")
                 }
 
                 scheduler.scheduleNext(reminder)
@@ -77,6 +82,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error handling alarm for reminder $reminderId", e)
+                Log.e(DIAGNOSTIC_TAG, "ALARM_ERROR: reminder $reminderId - ${e.message}")
             } finally {
                 pendingResult.finish()
             }

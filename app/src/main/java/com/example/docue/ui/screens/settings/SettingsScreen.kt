@@ -375,17 +375,19 @@ private fun BackgroundProtectionSection(
             onClick = onOpenBatterySettings
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        if (state.manufacturerDisplayName.contains("Xiaomi")) {
+            Text(
+                text = "For best results: set DoCue to \"Unrestricted\" in Battery > App battery saver. Also enable \"Run in background\" in App info.",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
             Text(
                 text = "May improve reminder reliability",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 

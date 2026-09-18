@@ -11,6 +11,7 @@ import com.example.docue.data.local.RepeatType
 import java.time.Instant
 
 private const val TAG = "ReminderScheduler"
+private const val DIAGNOSTIC_TAG = "DoCueDiagnostic"
 
 class ReminderScheduler(private val context: Context) {
 
@@ -47,12 +48,14 @@ class ReminderScheduler(private val context: Context) {
                         triggerMillis,
                         pendingIntent
                     )
+                    Log.d(DIAGNOSTIC_TAG, "ALARM_SCHEDULED_EXACT: reminder ${reminder.id} for ${Instant.ofEpochMilli(triggerMillis)}")
                 } else {
                     alarmManager.setAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         triggerMillis,
                         pendingIntent
                     )
+                    Log.d(DIAGNOSTIC_TAG, "ALARM_SCHEDULED_INEXACT: reminder ${reminder.id} (exact permission denied) for ${Instant.ofEpochMilli(triggerMillis)}")
                 }
             } else {
                 alarmManager.setExactAndAllowWhileIdle(
@@ -60,10 +63,12 @@ class ReminderScheduler(private val context: Context) {
                     triggerMillis,
                     pendingIntent
                 )
+                Log.d(DIAGNOSTIC_TAG, "ALARM_SCHEDULED_EXACT: reminder ${reminder.id} (pre-S) for ${Instant.ofEpochMilli(triggerMillis)}")
             }
             Log.d(TAG, "Scheduled reminder ${reminder.id} for ${Instant.ofEpochMilli(triggerMillis)}")
         } catch (e: SecurityException) {
             Log.e(TAG, "Failed to schedule exact alarm for reminder ${reminder.id}", e)
+            Log.e(DIAGNOSTIC_TAG, "ALARM_SCHEDULE_FAILED_SECURITY: reminder ${reminder.id} - ${e.message}")
             alarmManager.setAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 triggerMillis,

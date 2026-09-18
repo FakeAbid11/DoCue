@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -172,7 +173,12 @@ fun AppPickerScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val bitmap = remember(app.packageName) {
-                            app.icon?.toBitmap(48, 48)?.asImageBitmap()
+                            try {
+                                app.icon?.toBitmap(48, 48)?.asImageBitmap()
+                            } catch (e: Exception) {
+                                Log.e("AppPickerScreen", "Failed to convert icon to bitmap for ${app.packageName}", e)
+                                null
+                            }
                         }
 
                         if (bitmap != null) {

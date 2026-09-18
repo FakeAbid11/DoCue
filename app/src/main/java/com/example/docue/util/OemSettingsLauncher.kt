@@ -90,27 +90,9 @@ object OemSettingsLauncher {
     private fun createAutoStartIntent(context: Context): Intent? {
         return when (manufacturerFamily) {
             ManufacturerFamily.XIAOMI -> {
-                try {
-                    Intent().apply {
-                        setClassName(
-                            "com.miui.securitycenter",
-                            "com.miui.permcenter.autostart.AutoStartManagementActivity"
-                        )
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                } catch (_: Exception) {
-                    try {
-                        Intent().apply {
-                            setClassName(
-                                "com.miui.securitycenter",
-                                "com.miui.powercenter.PowerSettings"
-                            )
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                    } catch (_: Exception) {
-                        createAppInfoIntent(context)
-                    }
-                }
+                tryHyperOSIntent()
+                    ?: tryMIUIIntent()
+                    ?: createAppInfoIntent(context)
             }
             ManufacturerFamily.HUAWEI -> {
                 try {
@@ -170,6 +152,34 @@ object OemSettingsLauncher {
             ManufacturerFamily.GENERIC -> {
                 createAppInfoIntent(context)
             }
+        }
+    }
+
+    private fun tryHyperOSIntent(): Intent? {
+        return try {
+            Intent().apply {
+                setClassName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.autostart.AutoStartManagementActivity"
+                )
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun tryMIUIIntent(): Intent? {
+        return try {
+            Intent().apply {
+                setClassName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.permissions.PermissionsEditorActivity"
+                )
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        } catch (_: Exception) {
+            null
         }
     }
 

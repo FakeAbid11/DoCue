@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,7 +51,12 @@ class AppPickerViewModel(application: Application) : AndroidViewModel(applicatio
             val packageName = activityInfo.packageName
             if (packageName == selfPackage) return@mapNotNull null
 
-            val appName = resolveInfo.loadLabel(pm).toString()
+            val appName = try {
+                resolveInfo.loadLabel(pm).toString()
+            } catch (e: Exception) {
+                Log.w("AppPickerVM", "Failed to load label for $packageName", e)
+                activityInfo.loadLabel(pm).toString().ifBlank { packageName }
+            }
             val icon = try {
                 resolveInfo.loadIcon(pm)
             } catch (_: Exception) {
