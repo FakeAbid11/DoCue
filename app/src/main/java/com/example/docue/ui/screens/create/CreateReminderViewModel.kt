@@ -1,6 +1,7 @@
 package com.example.docue.ui.screens.create
 
 import android.app.Application
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,7 @@ data class CreateReminderUiState(
     val targetPackage: String = "",
     val targetAppName: String = "",
     val targetUrl: String = "",
+    val targetAppAvailable: Boolean = true,
     val expirationDate: LocalDate? = null,
     val hasExpiration: Boolean = false,
     val isEditing: Boolean = false,
@@ -76,6 +78,7 @@ class CreateReminderViewModel(application: Application) : AndroidViewModel(appli
                     editingReminderId = reminder.id
                 )
             }
+            checkTargetAppAvailability()
         }
     }
 
@@ -132,7 +135,25 @@ class CreateReminderViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun clearTargetApp() {
-        _uiState.update { it.copy(targetPackage = "", targetAppName = "", actionError = null) }
+        _uiState.update { it.copy(targetPackage = "", targetAppName = "", targetAppAvailable = true, actionError = null) }
+    }
+
+    fun isTargetAppAvailable(packageName: String): Boolean {
+        if (packageName.isBlank()) return true
+        return try {
+            getApplication<Application>().packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun checkTargetAppAvailability() {
+        val pkg = _uiState.value.targetPackage
+        if (pkg.isNotBlank()) {
+            val available = isTargetAppAvailable(pkg)
+            _uiState.update { it.copy(targetAppAvailable = available) }
+        }
     }
 
     fun deleteReminder() {

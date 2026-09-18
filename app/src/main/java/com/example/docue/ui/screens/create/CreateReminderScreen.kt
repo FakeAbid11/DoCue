@@ -423,14 +423,26 @@ fun CreateReminderScreen(
                             Icon(
                                 Icons.Default.Smartphone,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = if (uiState.targetAppAvailable) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                }
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = uiState.targetAppName,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                                if (uiState.targetAppAvailable) {
+                                    Text(
+                                        text = uiState.targetAppName,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                } else {
+                                    Text(
+                                        text = "App unavailable",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
                                 Text(
                                     text = uiState.targetPackage,
                                     style = MaterialTheme.typography.bodySmall,

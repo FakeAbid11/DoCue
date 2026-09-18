@@ -134,7 +134,11 @@ fun AppPickerScreen(
 
             if (filteredApps.isEmpty() && !uiState.isLoading) {
                 Text(
-                    text = "No apps found",
+                    text = if (uiState.installedApps.isEmpty()) {
+                        "No launchable apps found"
+                    } else {
+                        "No apps match your search"
+                    },
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
