@@ -156,9 +156,7 @@ fun AppPickerScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val bitmap = remember(app.packageName) {
-                            app.icon?.toBitmap(48, 48)?.let {
-                                asImageBitmap(it)
-                            }
+                            app.icon?.toBitmap(48, 48)?.asImageBitmap()
                         }
 
                         if (bitmap != null) {
