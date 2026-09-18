@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.docue.ui.theme.ThemeMode
 import com.example.docue.data.local.ReminderDao
 import com.example.docue.scheduler.ReminderScheduler
+import com.example.docue.util.OemSettingsLauncher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,11 @@ import kotlinx.coroutines.withContext
 data class ReliabilityState(
     val notificationsEnabled: Boolean = true,
     val exactAlarmsAllowed: Boolean = true,
+    val batteryOptimizationRestricted: Boolean = false
+)
+
+data class BackgroundProtectionState(
+    val manufacturerDisplayName: String = "Unknown",
     val batteryOptimizationRestricted: Boolean = false
 )
 
@@ -42,6 +48,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _reliabilityState = MutableStateFlow(loadReliabilityState())
     val reliabilityState: StateFlow<ReliabilityState> = _reliabilityState.asStateFlow()
 
+    private val _backgroundProtectionState = MutableStateFlow(loadBackgroundProtectionState())
+    val backgroundProtectionState: StateFlow<BackgroundProtectionState> = _backgroundProtectionState.asStateFlow()
+
     fun setThemeMode(mode: ThemeMode) {
         _themeMode.value = mode
         prefs.edit().putString("theme_mode", mode.name).apply()
@@ -49,6 +58,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun refreshReliabilityState() {
         _reliabilityState.value = loadReliabilityState()
+        _backgroundProtectionState.value = loadBackgroundProtectionState()
     }
 
     fun openNotificationSettings() {
@@ -79,6 +89,21 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         context.startActivity(intent)
     }
 
+    fun openAutoStartSettings() {
+        val context = getApplication<Application>()
+        OemSettingsLauncher.launchAutoStartSettings(context)
+    }
+
+    fun openBatterySettings() {
+        val context = getApplication<Application>()
+        OemSettingsLauncher.launchBatterySettings(context)
+    }
+
+    fun openAppInfoSettings() {
+        val context = getApplication<Application>()
+        OemSettingsLauncher.launchAppInfoSettings(context)
+    }
+
     fun deleteAllReminders() {
         viewModelScope.launch {
             val allReminders = withContext(Dispatchers.IO) { dao.getAllOnce() }
@@ -96,6 +121,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             } else {
                 true
             },
+            batteryOptimizationRestricted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                !powerManager.isIgnoringBatteryOptimizations(context.packageName)
+            } else {
+                false
+            }
+        )
+    }
+
+    private fun loadBackgroundProtectionState(): BackgroundProtectionState {
+        val context = getApplication<Application>()
+        return BackgroundProtectionState(
+            manufacturerDisplayName = OemSettingsLauncher.manufacturerDisplayName,
             batteryOptimizationRestricted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 !powerManager.isIgnoringBatteryOptimizations(context.packageName)
             } else {

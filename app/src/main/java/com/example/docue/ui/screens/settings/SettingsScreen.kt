@@ -21,8 +21,10 @@ import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.docue.ui.theme.ThemeMode
+import com.example.docue.util.OemSettingsLauncher
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +61,7 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val reliabilityState by viewModel.reliabilityState.collectAsStateWithLifecycle()
+    val backgroundProtectionState by viewModel.backgroundProtectionState.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showResetDialog by remember { mutableStateOf(false) }
 
@@ -121,6 +125,16 @@ fun SettingsScreen(
                 onOpenNotificationSettings = { viewModel.openNotificationSettings() },
                 onOpenExactAlarmSettings = { viewModel.openExactAlarmSettings() },
                 onOpenBatteryOptimizationSettings = { viewModel.openBatteryOptimizationSettings() }
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            SectionHeader(icon = Icons.Outlined.PhoneAndroid, title = "Background protection")
+            BackgroundProtectionSection(
+                state = backgroundProtectionState,
+                onOpenAutoStartSettings = { viewModel.openAutoStartSettings() },
+                onOpenBatterySettings = { viewModel.openBatterySettings() },
+                onOpenAppInfoSettings = { viewModel.openAppInfoSettings() }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -334,6 +348,75 @@ private fun ReliabilityItem(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+}
+
+@Composable
+private fun BackgroundProtectionSection(
+    state: BackgroundProtectionState,
+    onOpenAutoStartSettings: () -> Unit,
+    onOpenBatterySettings: () -> Unit,
+    onOpenAppInfoSettings: () -> Unit
+) {
+    Column {
+        Text(
+            text = "Your phone (${state.manufacturerDisplayName}) may restrict DoCue in the background.",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        ReliabilityItem(
+            icon = Icons.Outlined.PhoneAndroid,
+            title = "Auto-start / background launch",
+            status = "Review device settings",
+            statusColor = MaterialTheme.colorScheme.primary,
+            onClick = onOpenAutoStartSettings
+        )
+
+        ReliabilityItem(
+            icon = if (state.batteryOptimizationRestricted) Icons.Outlined.Warning else Icons.Outlined.BatteryAlert,
+            title = "Battery usage",
+            status = if (state.batteryOptimizationRestricted) {
+                "May affect reliability"
+            } else {
+                "Not restricted"
+            },
+            statusColor = if (state.batteryOptimizationRestricted) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.primary
+            },
+            onClick = onOpenBatterySettings
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "May improve reminder reliability",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = onOpenAppInfoSettings,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Open DoCue settings")
+            }
         }
     }
 }
