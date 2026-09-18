@@ -66,15 +66,9 @@ class AlarmReceiver : BroadcastReceiver() {
                 }
 
                 val notificationHelper = NotificationHelper(context)
-                notificationHelper.createNotificationChannel()
 
-                val canShowNotification = notificationHelper.canShowNotifications()
-                if (!canShowNotification) {
-                    Log.e(DIAGNOSTIC_TAG, "NOTIFICATION_BLOCKED: permission not granted for reminder $reminderId")
-                } else {
-                    notificationHelper.showReminderNotification(reminder)
-                    Log.d(DIAGNOSTIC_TAG, "NOTIFICATION_POSTED: reminder $reminderId (${reminder.title})")
-                }
+                notificationHelper.showReminderPopup(reminder)
+                Log.d(DIAGNOSTIC_TAG, "POPUP_LAUNCHED: reminder $reminderId (${reminder.title})")
 
                 scheduler.scheduleNext(reminder)
 

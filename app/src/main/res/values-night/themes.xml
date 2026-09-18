@@ -3,4 +3,12 @@
     <style name="Theme.DoCue" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">#FF1A1C18</item>
     </style>
+
+    <style name="Theme.DoCue.Popup" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 </resources>

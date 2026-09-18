@@ -14,6 +14,7 @@ import com.example.docue.MainActivity
 import com.example.docue.R
 import com.example.docue.data.local.ActionType
 import com.example.docue.data.local.ReminderEntity
+import com.example.docue.ui.screens.popup.PopupActivity
 
 private const val TAG = "NotificationHelper"
 private const val CHANNEL_ID = "docue_reminders"
@@ -119,6 +120,18 @@ class NotificationHelper(private val context: Context) {
 
     fun dismissNotification(reminderId: Long) {
         notificationManager.cancel(reminderId.toInt())
+    }
+
+    fun showReminderPopup(reminder: ReminderEntity) {
+        try {
+            val intent = PopupActivity.createIntent(context, reminder)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            Log.d(TAG, "Launched popup for reminder ${reminder.id}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to launch popup for reminder ${reminder.id}, falling back to notification", e)
+            showReminderNotification(reminder)
+        }
     }
 
     private fun createOpenIntent(reminder: ReminderEntity): Intent {
