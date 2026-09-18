@@ -24,6 +24,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -262,7 +266,7 @@ fun CreateReminderScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             DoCueSectionHeader(
-                icon = androidx.compose.material.icons.Icons.Outlined.Edit,
+                icon = Icons.Outlined.Edit,
                 title = "What do you need to remember?"
             )
             OutlinedTextField(
@@ -287,7 +291,7 @@ fun CreateReminderScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             DoCueSectionHeader(
-                icon = androidx.compose.material.icons.Icons.Outlined.Schedule,
+                icon = Icons.Outlined.Schedule,
                 title = "When?"
             )
             Row(
@@ -335,7 +339,7 @@ fun CreateReminderScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             DoCueSectionHeader(
-                icon = androidx.compose.material.icons.Icons.Outlined.Repeat,
+                icon = Icons.Outlined.Repeat,
                 title = "Repeat"
             )
             Column(modifier = Modifier.selectableGroup()) {
@@ -412,7 +416,7 @@ fun CreateReminderScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             DoCueSectionHeader(
-                icon = androidx.compose.material.icons.Icons.Outlined.TouchApp,
+                icon = Icons.Outlined.TouchApp,
                 title = "What happens when you tap it?"
             )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

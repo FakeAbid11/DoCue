@@ -14,6 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.EventNote
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -119,9 +122,9 @@ fun TodayScreen(
                             ActionType.SIMPLE -> "Reminder"
                         },
                         actionIcon = when (reminder.actionType) {
-                            ActionType.APP -> androidx.compose.material.icons.Icons.Filled.Apps
-                            ActionType.LINK -> androidx.compose.material.icons.Icons.Filled.Link
-                            ActionType.SIMPLE -> androidx.compose.material.icons.Icons.Filled.Notifications
+                            ActionType.APP -> Icons.Filled.Apps
+                            ActionType.LINK -> Icons.Filled.Link
+                            ActionType.SIMPLE -> Icons.Filled.Notifications
                         },
                         notes = reminder.notes.ifBlank { null },
                         onClick = { onReminderClick(reminder.id) }
